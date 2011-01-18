@@ -1,0 +1,10 @@
+QUILT_PATCHES=debian/patches
+QUILT_REFRESH_ARGS="-p ab --no-timestamps --no-index"
+DEBEMAIL=happyaron.xu@gmail.com
+DEBFULLNAME="Aron Xu"
+export QUILT_PATCHES QUILT_REFRESH_ARGS DEBEMAIL DEBFULLNAME
+
+alias mutt='LANGUAGE="en_US.UTF-8" mutt'
+
+PATH=$PATH:$HOME/usr/bin
+export PATH
