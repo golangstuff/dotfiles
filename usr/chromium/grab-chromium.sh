@@ -34,8 +34,12 @@ DOWN="wget -P ${TMPDIR}"
 # Process name
 PROCESS=chrome
 # Don't change it if you don't know what you are doing.
+# Command line, for grabbing a specific version.
 LATEST=$1
-#LATEST=`wget -q -O - 'http://build.chromium.org/buildbot/snapshots/chromium-rel-linux-64/LATEST' | awk 'NF > 0'`
+# i386
+#LATEST=`wget -q -O - 'http://build.chromium.org/buildbot/snapshots/chromium-rel-linux/LATEST' | awk 'NF > 0'`
+# amd64
+#LATEST=`wget -q -O - 'http://build.chromium.org/buildbot/snapshots/chromium-rel-linux/LATEST' | awk 'NF > 0'`
 
 # Script actually starts from here.
 
