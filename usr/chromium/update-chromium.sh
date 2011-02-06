@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Don't exit when errors occur.
-set -e
-
 # Place you would like to install chromium.
 PLACE=${HOME}/usr/chromium
 

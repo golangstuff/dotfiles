@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Don't exit when errors occur.
-set -e
-
 # Place you would like to install chromium.
 PLACE=${HOME}/usr/chromium
 
@@ -26,9 +23,9 @@ TMPDIR=/dev/shm/chromium-update
 
 # Downloader and options, please ONLY left ONE of all listed below uncommented.
 # Use wget, default.
-DOWN="wget -P ${TMPDIR}"
+#DOWN="wget -P ${TMPDIR}"
 # Use aria2, if you like.
-#DOWN="aria2c -d ${TMPDIR}"
+DOWN="aria2c -d ${TMPDIR}"
 # Use curl, if you prefer curl to wget.
 #DOWN="cd ${TMPDIR};curl -O"
 # Use axel, it's an old buggy thing... Okay, if you still like it, I give in.
