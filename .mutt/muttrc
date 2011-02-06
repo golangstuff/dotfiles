@@ -19,7 +19,7 @@ set query_command = "lbdbq '%s'"
 #set smtp agent
 set sendmail="~/usr/bin/filtersend"
 #set sendmail="/usr/sbin/sendmail"
-set sendmail_wait = 5
+set sendmail_wait = 10
 #set sendmail='msmtp -a uq'
 macro generic \Cx_ "<enter-command>set sendmail" "Internal macro from the MSMTP module"
 macro generic \Cx| "\Cx_ = \"/usr/bin/msmtp" "Internal macro from the MSMTP module"
@@ -189,6 +189,9 @@ set pager_stop
 set header_cache=~/.mutt/headercache
 set maildir_header_cache_verify=no
 
+set signature=~/.mutt/signature
+set tmpdir=~/.mutt/tmp/
+
 # Maildir style trash flag instead of unlink.
 set maildir_trash=no
 
@@ -228,8 +231,29 @@ bind    pager   <Up>    previous-line
 bind    pager   <Down>  next-line
 bind    pager   gg      top
 
-macro index ,f "<shell-escape>rm -rf ~/.mu/results; mu find -f l -l ~/.mu/results " "mu find"              
-macro index ,s "<change-folder-readonly>~/.mu/results\n" "display mu find results"
+#macro index ,f "<shell-escape>rm -rf ~/.mu/results; mu find -f l -l ~/.mu/results " "mu find"              
+#macro index ,s "<change-folder-readonly>~/.mu/results\n" "display mu find results"
+#
+# "c" is the shortcut for changing mailboxes, list:
+#    refers to    |  mutt-var  |    shortcut
+#     "inbox"     | $spoolfile |      "!" 
+#      $HOME      |    none    | "~" or "$HOME" 
+#     folders     |  $folder   |   "+" or "=" 
+#      "mbox"     |   $mbox    |      ">"
+#      "sent"     |  $record   |      "<"
+#     postpond    | $postponed |  "+postponed" 
+#  last visited   |    none    |   "-" or "!!"
+# alias (default) |    none    |    "@alias"
+# current folder  |    none    |      "^"
+#
+
+macro index ,s \
+    "<enter-command>unset wait_key<enter><shell-escape>~/usr/bin/mutt-notmuch --prompt search<enter><change-folder-readonly>~/.cache/mutt_results<enter>" \
+    "search mail (using notmuch)"
+
+macro index ,f \
+    "<enter-command>unset wait_key<enter><pipe-message>~/usr/bin/mutt-notmuch thread<enter><change-folder-readonly>~/.cache/mutt_results<enter><enter-command>set wait_key<enter>" \
+    "search and reconstruct owning thread (using notmuch)"
 
 #       the string "PGPPASSFD=0" if one is needed.
 #       This is mostly used in conditional % sequences.
