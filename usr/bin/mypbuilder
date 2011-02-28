@@ -1,0 +1,44 @@
+#!/bin/sh
+# Author: Aron Xu <happyaron.xu@gmail.com>
+#   Derived from Zhengpeng Hou's pbuilder wrapper, thanks!
+
+BASE_DIR="$HOME/pbuilder"
+
+DISTRIBUTION=$1
+OPERATION=$2
+DSCFILE=$3
+ARCH=i386
+BASENAME=`basename $DSCFILE .dsc`
+PROCEED=false
+datum=`/bin/date +"%Y%m%d_%H%M"`
+case $OPERATION in
+   build )
+       PROCEED=true
+       LOG=$BASE_DIR/logs/$DISTRIBUTION-$ARCH/${BASENAME}_$datum.log
+       ;;
+   create|update|build|clean|execute|debuild )
+      PROCEED=true
+      LOG=$BASE_DIR/logs/$DISTRIBUTION-$ARCH/${OPERATION}_$datum.log
+      ;;
+   login )
+	LOGIN=true
+	;;
+esac
+if $PROCEED == true ; then
+   echo "Log is $LOG";
+   sudo pbuilder $OPERATION \
+      --override-config \
+      --basetgz $BASE_DIR/base/$DISTRIBUTION-$ARCH-base.tgz \
+      --distribution $DISTRIBUTION \
+      --configfile $BASE_DIR/etc/$DISTRIBUTION-$ARCH-pbuilderrc \
+      --logfile $LOG \
+      --buildresult $BASE_DIR/result/$DISTRIBUTION-$ARCH $DSCFILE
+elif $LOGIN == true ; then 
+   sudo pbuilder $OPERATION \
+      --override-config \
+      --basetgz $BASE_DIR/base/$DISTRIBUTION-$ARCH-base.tgz \
+      --distribution $DISTRIBUTION \
+      --configfile $BASE_DIR/etc/$DISTRIBUTION-$ARCH-pbuilderrc \
+      --buildresult $BASE_DIR/result/$DISTRIBUTION-$ARCH $DSCFILE
+fi
+
