@@ -1,5 +1,6 @@
 # Order to display the headers in
 #Author: Roy L Zuo (roylzuo at gmail dot com)
+#Changed by Aron Xu
 #Description: mutt main configuration file
 
 ignore *
