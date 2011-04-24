@@ -1,7 +1,6 @@
 #!/bin/sh
 # vim:fdm=marker
 #Author: Aron Xu (happyaron.xu@gmail.com)
-set -e
 
 # Who to receive all the messages
 receiver="chenyueg@gmail.com"
@@ -199,12 +198,12 @@ echo "`date +%H:%M:%S`: getmail process clean." >> ${runlog}
 if [ -f $workdir/log/getmail.log ]; then
     mv $workdir/log/getmail.log $logdir/getmail.log.${min}
     echo "`date +%H:%M:%S`: Found getmail.log, moved to $logdir/getmail.log.${min}" >> ${runlog}
-    gerr=`grep -i error $logdir/getmail.log.${min} &` 
+    gerr=`grep -i error $logdir/getmail.log.${min}` 
     if [ ! -z $gerr ]; then
 	printf "`date +%H:%M:%S`: Error in $logdir/getmail.log.${min}\n-------------getmail error log start-------------\n$gerr\n-------------getmail error log finished-------------" >> ${errlog}
 	printf "`date +%H:%M:%S`: Error in $logdir/getmail.log.${min}\n-------------getmail error log start-------------\n$gerr\n-------------getmail error log finished-------------" | mutt -s "$title getmail error in log" $admin;
     fi
-    gwarn=`grep -i warning $logdir/getmail.log.${min} &`
+    gwarn=`grep -i warning $logdir/getmail.log.${min}`
     if [ ! -z $gwarn ]; then
 	printf "`date +%H:%M:%S`: Waring in $logdir/getmail.log.${min}\n-------------getmail waring log start-------------\n$gerr\n-------------waring error log finished-------------" >> ${errlog}
 	printf "`date +%H:%M:%S`: Waring in $logdir/getmail.log.${min}\n-------------getmail waring log start-------------\n$gerr\n-------------waring error log finished-------------" | mutt -s "$title getmail warning in log" $admin;
