@@ -14,4 +14,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-exec $HOME/usr/chromium/chromium-browser/chrome %U --disk-cache-dir="/dev/shm/browser.`whoami`.cache/chromium" --disk-cache-size=52428800
+exec $HOME/usr/chromium/chromium-browser/chrome $1 --disk-cache-dir="/dev/shm/browser.`whoami`.cache/chromium" --disk-cache-size=52428800

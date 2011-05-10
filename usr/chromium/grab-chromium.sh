@@ -25,7 +25,7 @@ TMPDIR=/dev/shm/chromium-update
 # Use wget, default.
 #DOWN="wget -P ${TMPDIR}"
 # Use aria2, if you like.
-DOWN="aria2c -d ${TMPDIR}"
+DOWN="aria2c -x 5 -d ${TMPDIR}"
 # Use curl, if you prefer curl to wget.
 #DOWN="cd ${TMPDIR};curl -O"
 # Use axel, it's an old buggy thing... Okay, if you still like it, I give in.
@@ -61,7 +61,10 @@ else
 	rm -rf ${TMPDIR} && mkdir ${TMPDIR} && cd ${TMPDIR};
 fi
 
-${DOWN} http://build.chromium.org/buildbot/snapshots/chromium-rel-linux/$LATEST/chrome-linux.zip
+${DOWN} http://build.chromium.org/f/chromium/snapshots/chromium-rel-linux/$LATEST/chrome-linux.zip
+
+#${DOWN} http://184.82.250.59/~aron/chrome-linux.zip
+
 cd ${TMPDIR}
 unzip ${TMPDIR}/chrome-linux.zip
 rm -f ${TMPDIR}/chrome-linux.zip
