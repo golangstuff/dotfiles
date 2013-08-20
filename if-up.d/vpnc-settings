@@ -1,0 +1,15 @@
+#!/bin/sh
+
+VPNC=/usr/sbin/vpnc
+
+if [ ! -x $VPNC ]; then
+	exit 0
+fi
+
+if `pidof $VPNC > /dev/null`; then
+	if `ip link | grep tun | grep 1412 > /dev/null`; then
+		for i in ` ip link | grep tun | grep 1412 | cut -d' ' -f2 | sed 's/://'`; do
+			ip link set mtu 1382 dev tun0
+		done
+	fi
+fi
