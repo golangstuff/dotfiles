@@ -1,8 +1,4 @@
-SUBSYSTEM!="pci", GOTO="power_runtime_rules_end"
-ACTION!="add", GOTO="power_runtime_rules_end"
-
-KERNEL=="????:??:??.?"
-
-ATTR{power/control}=="*", ATTR{power/control}="auto"
-
-LABEL="power_runtime_rules_end"
+SUBSYSTEM=="pci", ACTION=="add", ATTR{power/control}="auto"
+SUBSYSTEM=="net", ACTION=="add",  KERNEL=="eth*", RUN+="/sbin/ethtool -s %k wol d"
+SUBSYSTEM=="net", ACTION=="add",  KERNEL=="wlan*", RUN+="/sbin/iw dev %k set power_save on"
+SUBSYSTEM=="scsi_host", ACTION=="add", KERNEL=="host*", ATTR{link_power_management_policy}="min_power"
