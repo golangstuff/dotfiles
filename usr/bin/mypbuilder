@@ -1,44 +1,126 @@
 #!/bin/sh
 # Author: Aron Xu <happyaron.xu@gmail.com>
-#   Derived from Zhengpeng Hou's pbuilder wrapper, thanks!
+# License: GPL-3
 
-BASE_DIR="$HOME/pbuilder"
+BASEDIR="$HOME/pbuilder"
+NJBS=`getconf _SC_NPROCESSORS_ONLN`
 
-DISTRIBUTION=$1
-OPERATION=$2
-DSCFILE=$3
-ARCH=i386
+DIST=$1
+ARCH=$2
+OPERATION=$3
+DSCFILE=$4
 BASENAME=`basename $DSCFILE .dsc`
-PROCEED=false
 datum=`/bin/date +"%Y%m%d_%H%M"`
+
+# Quick check for architecture to prevent spelling error in
+# command line, add other archs you need.
+#case "$ARCH" in
+#   amd64 ) echo "Preparing build for amd64 architecture..";;
+#   i386 ) echo "Preparing build for i386 architecture.";;
+#   powerpc ) echo "Preparing build for powerpc architecture.";;
+#   * ) echo "Architecture unknown, abort."
+#        exit 1;;
+#esac
+
+machinetype=`uname -m`
+ARG=""
+if [ "$machinetype" = "i686" ] && [ "$ARCH" != "i386" ]; then
+    echo "Error: can only build i386 packages on this machine.";
+    exit 1;
+elif [ "$machinetype" = "x86_64" ] && [ "$ARCH" = "i386" ]; then
+    ARG="linux32";
+fi
+
+# After this paragraph, $@ is pointed to parameters after --.
+while [ -n "$1" ]; do
+    case "$1" in
+        --) shift
+            break;;
+    esac
+    shift
+done
+
+if [ ! -s $BASEDIR/etc/$DIST-$ARCH-pbuilderrc ]; then
+    echo "$BASEDIR/etc/$DIST-$ARCH-pbuilderrc does not exist or empty."
+    exit 1;
+fi
+if [ ! -s $BASEDIR/base/$DIST-$ARCH-base.tgz ]; then
+    echo "$BASEDIR/base/$DIST-$ARCH-base.tgz does not exist or empty."
+    exit 1;
+fi
+if [ ! -d $BASEDIR/logs/$DIST-$ARCH ]; then
+    echo "Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
+    exit 1;
+fi
+if [ ! -d $BASEDIR/result/$DIST-$ARCH ]; then
+    echo "Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
+    exit 1;
+fi
+
 case $OPERATION in
    build )
        PROCEED=true
-       LOG=$BASE_DIR/logs/$DISTRIBUTION-$ARCH/${BASENAME}_$datum.log
+       LOG=$BASEDIR/logs/$DIST-$ARCH/${BASENAME}_$datum.log
        ;;
-   create|update|build|clean|execute|debuild )
+   create|update|clean|execute|debuild )
       PROCEED=true
-      LOG=$BASE_DIR/logs/$DISTRIBUTION-$ARCH/${OPERATION}_$datum.log
+      LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
       ;;
    login )
-	LOGIN=true
-	;;
+      LOGIN=true
+      ;;
+   edit )
+      EDIT=true
+      ;;
+   edit-script )
+      EXEC=true
+      LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
+      ;;
+   * ) echo "Error: operations in build|create|update|login|execute|edit|edit-script."
+       ;;
 esac
+
 if $PROCEED == true ; then
    echo "Log is $LOG";
-   sudo pbuilder $OPERATION \
+   sudo DEB_BUILD_PARALLEL=1 DEB_BUILD_OPTIONS="parallel=${NJBS}" $ARG pbuilder $OPERATION \
       --override-config \
-      --basetgz $BASE_DIR/base/$DISTRIBUTION-$ARCH-base.tgz \
-      --distribution $DISTRIBUTION \
-      --configfile $BASE_DIR/etc/$DISTRIBUTION-$ARCH-pbuilderrc \
+      --autocleanaptcache \
+      --architecture $ARCH \
+      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --distribution $DIST \
+      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc \
       --logfile $LOG \
-      --buildresult $BASE_DIR/result/$DISTRIBUTION-$ARCH $DSCFILE
-elif $LOGIN == true ; then 
-   sudo pbuilder $OPERATION \
-      --override-config \
-      --basetgz $BASE_DIR/base/$DISTRIBUTION-$ARCH-base.tgz \
-      --distribution $DISTRIBUTION \
-      --configfile $BASE_DIR/etc/$DISTRIBUTION-$ARCH-pbuilderrc \
-      --buildresult $BASE_DIR/result/$DISTRIBUTION-$ARCH $DSCFILE
-fi
+      --buildresult $BASEDIR/result/$DIST-$ARCH \
+      $@ $DSCFILE
 
+elif $LOGIN == true ; then 
+   sudo $ARG pbuilder $OPERATION \
+      --override-config \
+      --autocleanaptcache \
+      --architecture $ARCH \
+      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --distribution $DIST \
+      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
+
+elif $EDIT == true ; then 
+   sudo $ARG pbuilder login \
+      --override-config \
+      --autocleanaptcache \
+      --architecture $ARCH \
+      --save-after-login \
+      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --distribution $DIST \
+      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
+
+elif $EXEC == true ; then 
+   echo "Log is $LOG";
+   sudo $ARG pbuilder execute \
+      --override-config \
+      --autocleanaptcache \
+      --architecture $ARCH \
+      --save-after-exec \
+      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --distribution $DIST \
+      --logfile $LOG \
+      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
+fi
