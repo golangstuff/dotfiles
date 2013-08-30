@@ -3,7 +3,7 @@
 # License: GPL-3
 
 BASEDIR="$HOME/pbuilder"
-NJBS=`getconf _SC_NPROCESSORS_ONLN`
+NJBS=`getconf _NPROCESSORS_ONLN`
 
 DIST=$1
 ARCH=$2
