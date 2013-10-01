@@ -35,6 +35,7 @@ mplayer $1.m2ts -dumpaudio -dumpfile $1.ac3
 # Copy the raw x264 encoded video into an MP4 container so we can set
 # the correct framerate (generally 23.976 - adjust it if MPlayer or
 # MEncoder report something different)
+# Some of them are 29.970, other digits may also be available
 MP4Box -add $1.x264 $1.mp4 -fps 23.976
 
 # Finally, merge everything into a single MKV file
