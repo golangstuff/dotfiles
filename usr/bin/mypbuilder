@@ -22,6 +22,11 @@ datum=`/bin/date +"%Y%m%d_%H%M"`
 #        exit 1;;
 #esac
 
+if ! [ -x /usr/bin/pigz ]; then
+    printf "pigz not found, exit.\n"
+    exit
+fi
+
 machinetype=`uname -m`
 ARG=""
 if [ "$machinetype" = "i686" ] && [ "$ARCH" != "i386" ]; then
@@ -87,6 +92,7 @@ if $PROCEED == true ; then
       --autocleanaptcache \
       --architecture $ARCH \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --compressprog pigz \
       --distribution $DIST \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc \
       --logfile $LOG \
@@ -99,6 +105,7 @@ elif $LOGIN == true ; then
       --autocleanaptcache \
       --architecture $ARCH \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --compressprog pigz \
       --distribution $DIST \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
 
@@ -109,6 +116,7 @@ elif $EDIT == true ; then
       --architecture $ARCH \
       --save-after-login \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --compressprog pigz \
       --distribution $DIST \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
 
@@ -120,6 +128,7 @@ elif $EXEC == true ; then
       --architecture $ARCH \
       --save-after-exec \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
+      --compressprog pigz \
       --distribution $DIST \
       --logfile $LOG \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
