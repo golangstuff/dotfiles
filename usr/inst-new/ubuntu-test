@@ -42,3 +42,5 @@ sudo update-alternatives --set editor /usr/bin/vim.basic
 mkdir -p ~/testing
 
 sudo apt-get -y install git-buildpackage bzr quilt
+
+sudo apt-get -y install flashplugin-installer
