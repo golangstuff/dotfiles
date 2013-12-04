@@ -5,6 +5,7 @@ if [ -z $1 ]; then
         printf "Usage:\n\t`basename $0` \$DISTRO [\$MIRROR_SITE]\n"
         exit
 fi
+DISTRO=$1
 
 MIRROR_SITE=mirror.bit.edu.cn
 if ! [ -z $2 ]; then
