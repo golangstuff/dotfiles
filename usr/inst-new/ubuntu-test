@@ -7,7 +7,7 @@ if [ -z $1 ]; then
 fi
 
 MIRROR_SITE=mirror.bit.edu.cn
-if [ -z $2 ]; then
+if ! [ -z $2 ]; then
 	MIRROR_SITE=$2
 fi
 
