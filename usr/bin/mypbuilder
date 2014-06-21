@@ -12,6 +12,11 @@ DSCFILE=$4
 BASENAME=`basename $DSCFILE .dsc`
 datum=`/bin/date +"%Y%m%d_%H%M"`
 
+DISTRO=$DIST
+if [ "$DIST" = "wheezybpo" ]; then
+	DISTRO=wheezy
+fi
+
 # Quick check for architecture to prevent spelling error in
 # command line, add other archs you need.
 #case "$ARCH" in
@@ -82,7 +87,6 @@ case $OPERATION in
       LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
       ;;
    * ) echo "Error: operations in build|create|update|login|execute|edit|edit-script."
-       exit 1
        ;;
 esac
 
@@ -94,7 +98,7 @@ if $PROCEED == true ; then
       --architecture $ARCH \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
       --compressprog pigz \
-      --distribution $DIST \
+      --distribution $DISTRO \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc \
       --logfile $LOG \
       --buildresult $BASEDIR/result/$DIST-$ARCH \
@@ -107,7 +111,7 @@ elif $LOGIN == true ; then
       --architecture $ARCH \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
       --compressprog pigz \
-      --distribution $DIST \
+      --distribution $DISTRO \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
 
 elif $EDIT == true ; then 
@@ -118,7 +122,7 @@ elif $EDIT == true ; then
       --save-after-login \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
       --compressprog pigz \
-      --distribution $DIST \
+      --distribution $DISTRO \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
 
 elif $EXEC == true ; then 
@@ -130,7 +134,7 @@ elif $EXEC == true ; then
       --save-after-exec \
       --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
       --compressprog pigz \
-      --distribution $DIST \
+      --distribution $DISTRO \
       --logfile $LOG \
       --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
 fi
