@@ -6,6 +6,8 @@ export QUILT_PATCHES QUILT_REFRESH_ARGS DEBEMAIL DEBFULLNAME
 
 alias mutt='LANGUAGE="en_US.UTF-8" mutt'
 
+alias ack=ack-grep
+
 PATH=$PATH:$HOME/usr/bin
 
 export PATH
