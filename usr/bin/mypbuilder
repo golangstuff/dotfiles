@@ -87,6 +87,7 @@ case $OPERATION in
       LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
       ;;
    * ) echo "Error: operations in build|create|update|login|execute|edit|edit-script."
+       exit
        ;;
 esac
 
