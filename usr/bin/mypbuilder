@@ -17,16 +17,6 @@ if [ "$DIST" = "wheezybpo" ]; then
 	DISTRO=wheezy
 fi
 
-# Quick check for architecture to prevent spelling error in
-# command line, add other archs you need.
-#case "$ARCH" in
-#   amd64 ) echo "Preparing build for amd64 architecture..";;
-#   i386 ) echo "Preparing build for i386 architecture.";;
-#   powerpc ) echo "Preparing build for powerpc architecture.";;
-#   * ) echo "Architecture unknown, abort."
-#        exit 1;;
-#esac
-
 if ! [ -x /usr/bin/pigz ]; then
     printf "pigz not found, exit.\n"
     exit
