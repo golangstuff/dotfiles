@@ -1,4 +1,4 @@
-#!/bin/sh
+\n#!/bin/sh
 # Author: Aron Xu <happyaron.xu@gmail.com>
 # License: GPL-3
 
@@ -18,17 +18,22 @@ if [ "$DIST" = "wheezybpo" ]; then
 fi
 
 if ! [ -x /usr/bin/pigz ]; then
-    printf "pigz not found, exit.\n"
-    exit
+    printf "ERROR: pigz not found, exit.\n"
+    exit 1
+elif ! [ -x /usr/bin/dpkg-architecture ]; then
+    printf "ERROR: dpkg-architecture not found, exit.\n"
+    exit 1
+else
+    DEB_HOST_ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
 fi
 
-machinetype=`uname -m`
-ARG=""
-if [ "$machinetype" = "i686" ] && [ "$ARCH" != "i386" ]; then
-    echo "Error: can only build i386 packages on this machine.";
+unset ARG
+
+if [ "$DEB_HOST_ARCH" = "amd64" ] && [ "$ARCH" = "i386" ]; then
+    ARG+="linux32";
+elif [ "$DEB_HOST_ARCH" = "i386" ] && [ "$ARCH" != "i386" ]; then
+    printf "ERROR: Can build $DEB_HOST_ARCH packages only, exit.\n";
     exit 1;
-elif [ "$machinetype" = "x86_64" ] && [ "$ARCH" = "i386" ]; then
-    ARG="linux32";
 fi
 
 # After this paragraph, $@ is pointed to parameters after --.
@@ -49,7 +54,7 @@ if [ ! -s $BASEDIR/base/$DIST-$ARCH-base.tgz ]; then
     exit 1;
 fi
 if [ ! -d $BASEDIR/logs/$DIST-$ARCH ]; then
-    echo "Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
+    echo "WARN: Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
     exit 1;
 fi
 if [ ! -d $BASEDIR/result/$DIST-$ARCH ]; then
