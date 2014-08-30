@@ -10,13 +10,14 @@ DEB_TARGET_ARCH=$2
 OPERATION=$3
 DSCFILE=$4
 
-if ! `which pigz > /dev/null`; then
-    printf "E: pigz not found in PATH, hint: pigz.\n" 1>&2
-    exit 1
-elif ! `which dpkg-architecture > /dev/null`; then
-    printf "E: dpkg-architecture not found in PATH, hint: dpkg-dev.\n" 1>&2
-    exit 1
-elif ! `dpkg-architecture -a$DEB_TARGET_ARCH >/dev/null 2>&1`; then
+for i in pbuilder pigz dpkg-architecture; do
+    if ! `PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin which $i > /dev/null`; then
+        printf "E: $i not found in PATH.\n" 1>&2
+        exit 1
+    fi
+done
+
+if ! `dpkg-architecture -a$DEB_TARGET_ARCH >/dev/null 2>&1`; then
     printf "E: $DEB_TARGET_ARCH is not a valid architecture.\n" 1>&2
     exit 1
 else
