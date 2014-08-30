@@ -109,7 +109,7 @@ while [ -n "$1" ]; do
 done
 
 FUNC_PBUILDER_TMP() {
-    if ! [ -d /tmp/pbuilder ]; then
+    if ! [ -d $PBUILDER_TMP ]; then
         printf "W: $PBUILDER_TMP does not exist, creating.\n" 1>&2
         sudo mkdir -p $PBUILDER_TMP
     fi
