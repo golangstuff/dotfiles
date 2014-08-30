@@ -1,136 +1,146 @@
-\n#!/bin/sh
+#!/bin/sh
 # Author: Aron Xu <happyaron.xu@gmail.com>
 # License: GPL-3
 
 BASEDIR="$HOME/pbuilder"
-NJBS=`getconf _NPROCESSORS_ONLN`
+PBUILDER_TMP=/tmp/pbuilder
 
 DIST=$1
-ARCH=$2
+DEB_TARGET_ARCH=$2
 OPERATION=$3
 DSCFILE=$4
-BASENAME=`basename $DSCFILE .dsc`
-datum=`/bin/date +"%Y%m%d_%H%M"`
 
-DISTRO=$DIST
-if [ "$DIST" = "wheezybpo" ]; then
-	DISTRO=wheezy
-fi
-
-if ! [ -x /usr/bin/pigz ]; then
-    printf "ERROR: pigz not found, exit.\n"
+if ! `which pigz > /dev/null`; then
+    printf "E: pigz not found in PATH, hint: pigz.\n" 1>&2
     exit 1
-elif ! [ -x /usr/bin/dpkg-architecture ]; then
-    printf "ERROR: dpkg-architecture not found, exit.\n"
+elif ! `which dpkg-architecture > /dev/null`; then
+    printf "E: dpkg-architecture not found in PATH, hint: dpkg-dev.\n" 1>&2
+    exit 1
+elif ! `dpkg-architecture -a$DEB_TARGET_ARCH >/dev/null 2>&1`; then
+    printf "E: $DEB_TARGET_ARCH is not a valid architecture.\n" 1>&2
     exit 1
 else
     DEB_HOST_ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+    DEB_HOST_ARCH_BITS=`dpkg-architecture -qDEB_HOST_ARCH_BITS`
+    DEB_TARGET_ARCH_BITS=`dpkg-architecture -a$DEB_TARGET_ARCH -qDEB_HOST_ARCH_BITS`
 fi
 
-unset ARG
-
-if [ "$DEB_HOST_ARCH" = "amd64" ] && [ "$ARCH" = "i386" ]; then
-    ARG+="linux32";
-elif [ "$DEB_HOST_ARCH" = "i386" ] && [ "$ARCH" != "i386" ]; then
-    printf "ERROR: Can build $DEB_HOST_ARCH packages only, exit.\n";
-    exit 1;
+unset $ARG
+if [ $DEB_HOST_ARCH_BITS -gt $DEB_TARGET_ARCH_BITS ]; then
+    ARG += "linux32";
+elif [ $DEB_HOST_ARCH_BITS -lt $DEB_TARGET_ARCH_BITS ]; then
+    printf "E: Can not build $DEB_TARGET_ARCH package on this machine.\n" 1>&2
+    exit 1
 fi
 
-# After this paragraph, $@ is pointed to parameters after --.
+if `echo $DIST | grep "bpo$" > /dev/null`; then
+	DISTRO=`echo $DIST | sed 's/bpo$//'`
+else
+    DISTRO=$DIST
+fi
+
+if ! [ -d $BASEDIR/etc ]; then
+    printf "E: $BASEDIR/etc does not exist, BASEDIR not valid.\n" 1>&2
+    exit 1
+elif ! [ -s $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc ]; then
+    printf "E: $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc does not exist or empty.\n" 1>&2
+    exit 1
+fi
+
+for i in logs result; do
+    if ! [ -d $BASEDIR/$i/$DIST-$DEB_TARGET_ARCH ]; then
+        printf "W: Directory $BASEDIR/$i/$DIST-$DEB_TARGET_ARCH does not exist, creating.\n" 1>&2
+        mkdir -p $BASEDIR/$i/$DIST-$DEB_TARGET_ARCH
+    fi
+done
+
+PBUILDER_ACTION=$OPERATION
+if [ "$OPERATION" = "create" ]; then
+    PROCEED=true
+elif ! [ -s $BASEDIR/base/$DIST-$DEB_TARGET_ARCH-base.tgz ]; then
+    printf "E: $BASEDIR/base/$DIST-$DEB_TARGET_ARCH-base.tgz does not exist or empty.\n" 1>&2
+    exit 1
+else
+    case $OPERATION in
+        build )
+            if ! [ -s $DSCFILE ]; then
+                printf "E: $DSCFILE does not exist or empty.\n" 1>&2
+                exit 1
+            else
+                BASENAME=`basename $DSCFILE .dsc`
+            fi
+            PROCEED=true
+            ;;
+        update|clean|execute|debuild )
+            PROCEED=true
+            ;;
+        login )
+            LOGIN=true
+            ;;
+        edit )
+            EDIT=true
+            PBUILDER_ACTION=login
+            ;;
+        edit-script )
+            EXEC=true
+            PBUILDER_ACTION=execute
+            ;;
+        * )
+            printf "E: Operations in build|create|update|login|execute|edit|edit-script.\n" 1>&2
+            exit 1
+            ;;
+    esac
+fi
+
+DATUM=`/bin/date +"%Y%m%d-%H%M"`
+if ! [ -z $BASENAME ]; then
+    LOG=$BASEDIR/logs/$DIST-$DEB_TARGET_ARCH/${OPERATION}_${BASENAME}_${DATUM}.log
+else
+    LOG=$BASEDIR/logs/$DIST-$DEB_TARGET_ARCH/${OPERATION}_${DATUM}.log
+fi
+
+# After this point, $@ is pointed to parameters after --.
 while [ -n "$1" ]; do
     case "$1" in
-        --) shift
-            break;;
+    --) shift
+        break;;
     esac
     shift
 done
 
-if [ ! -s $BASEDIR/etc/$DIST-$ARCH-pbuilderrc ]; then
-    echo "$BASEDIR/etc/$DIST-$ARCH-pbuilderrc does not exist or empty."
-    exit 1;
-fi
-if [ ! -s $BASEDIR/base/$DIST-$ARCH-base.tgz ]; then
-    echo "$BASEDIR/base/$DIST-$ARCH-base.tgz does not exist or empty."
-    exit 1;
-fi
-if [ ! -d $BASEDIR/logs/$DIST-$ARCH ]; then
-    echo "WARN: Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
-    exit 1;
-fi
-if [ ! -d $BASEDIR/result/$DIST-$ARCH ]; then
-    echo "Directory $BASEDIR/logs/$DIST-$ARCH does not exist."
-    exit 1;
-fi
+FUNC_PBUILDER_TMP() {
+    if ! [ -d /tmp/pbuilder ]; then
+        printf "W: $PBUILDER_TMP does not exist, creating.\n" 1>&2
+        sudo mkdir -p $PBUILDER_TMP
+    fi
+}
 
-case $OPERATION in
-   build )
-       PROCEED=true
-       LOG=$BASEDIR/logs/$DIST-$ARCH/${BASENAME}_$datum.log
-       ;;
-   create|update|clean|execute|debuild )
-      PROCEED=true
-      LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
-      ;;
-   login )
-      LOGIN=true
-      ;;
-   edit )
-      EDIT=true
-      ;;
-   edit-script )
-      EXEC=true
-      LOG=$BASEDIR/logs/$DIST-$ARCH/${OPERATION}_$datum.log
-      ;;
-   * ) echo "Error: operations in build|create|update|login|execute|edit|edit-script."
-       exit
-       ;;
-esac
+NJOBS=`getconf _NPROCESSORS_ONLN`
+PBUILDER_CMD="sudo DEB_BUILD_PARALLEL=1 DEB_BUILD_OPTIONS=parallel=${NJOBS} $ARG pbuilder $PBUILDER_ACTION"
+COMMON_ARGS="--override-config \
+    --autocleanaptcache \
+    --compressprog pigz \
+    --architecture $DEB_TARGET_ARCH \
+    --distribution $DISTRO \
+    --configfile $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc \
+    --basetgz $BASEDIR/base/$DIST-$DEB_TARGET_ARCH-base.tgz"
 
-if $PROCEED == true ; then
-   echo "Log is $LOG";
-   sudo DEB_BUILD_PARALLEL=1 DEB_BUILD_OPTIONS="parallel=${NJBS}" $ARG pbuilder $OPERATION \
-      --override-config \
-      --autocleanaptcache \
-      --architecture $ARCH \
-      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
-      --compressprog pigz \
-      --distribution $DISTRO \
-      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc \
-      --logfile $LOG \
-      --buildresult $BASEDIR/result/$DIST-$ARCH \
-      $@ $DSCFILE
-
-elif $LOGIN == true ; then 
-   sudo $ARG pbuilder $OPERATION \
-      --override-config \
-      --autocleanaptcache \
-      --architecture $ARCH \
-      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
-      --compressprog pigz \
-      --distribution $DISTRO \
-      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
-
-elif $EDIT == true ; then 
-   sudo $ARG pbuilder login \
-      --override-config \
-      --autocleanaptcache \
-      --architecture $ARCH \
-      --save-after-login \
-      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
-      --compressprog pigz \
-      --distribution $DISTRO \
-      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
-
-elif $EXEC == true ; then 
-   echo "Log is $LOG";
-   sudo $ARG pbuilder execute \
-      --override-config \
-      --autocleanaptcache \
-      --architecture $ARCH \
-      --save-after-exec \
-      --basetgz $BASEDIR/base/$DIST-$ARCH-base.tgz \
-      --compressprog pigz \
-      --distribution $DISTRO \
-      --logfile $LOG \
-      --configfile $BASEDIR/etc/$DIST-$ARCH-pbuilderrc
+if [ "$PROCEED" = "true" ]; then
+    FUNC_PBUILDER_TMP
+    $PBUILDER_CMD $COMMON_ARGS \
+        --buildresult $BASEDIR/result/$DIST-$DEB_TARGET_ARCH \
+        --logfile $LOG \
+        $@ $DSCFILE
+elif [ "$LOGIN" = "true" ]; then
+    FUNC_PBUILDER_TMP
+    $PBUILDER_CMD $COMMON_ARGS
+elif [ "$EDIT" = "true" ]; then
+    FUNC_PBUILDER_TMP
+    $PBUILDER_CMD $COMMON_ARGS \
+        --save-after-login
+elif [ "$EXEC" = "true" ]; then
+    FUNC_PBUILDER_TMP
+    $PBUILDER_CMD $COMMON_ARGS \
+        --logfile $LOG \
+        --save-after-exec
 fi
