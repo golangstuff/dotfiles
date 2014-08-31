@@ -10,7 +10,7 @@ DEB_TARGET_ARCH=$2
 OPERATION=$3
 DSCFILE=$4
 
-for i in pbuilder pigz dpkg-architecture; do
+for i in dpkg-architecture eatmydata pbuilder pigz; do
     if ! `PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin which $i > /dev/null`; then
         printf "E: Required command \"$i\" not found.\n" 1>&2
         exit 1
