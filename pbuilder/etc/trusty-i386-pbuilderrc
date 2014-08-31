@@ -10,6 +10,7 @@ DEBOOTSTRAPOPTS=(
     )
 ## Use fast un-safe I/O
 EXTRAPACKAGES+=eatmydata
+export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}/usr/lib/libeatmydata/libeatmydata.so"
 ## Assume /tmp or /tmp/pbuilder is tmpfs
 BUILDPLACE=/tmp/pbuilder
 ## No hard linking for tmpfs
