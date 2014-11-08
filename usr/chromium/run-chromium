@@ -14,4 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-exec $HOME/usr/chromium/chromium-browser/chrome $1 --disk-cache-dir="/dev/shm/browser.`whoami`.cache/chromium" --disk-cache-size=52428800
+# Work around the im-config problem
+XIM_INFO=$(echo $XMODIFIERS | cut -d'=' -f2)
+if [ "$GTK_IM_MODULE" = "xim" ] && [ "$XIM_INFO" != "xim" ]; then 
+        export GTK_IM_MODULE=$XIM_INFO
+fi
+
+export CHROME_DEVEL_SANDBOX="$HOME/usr/chromium/chromium-browser/chrome_sandbox"
+. /usr/lib/pepperflashplugin-nonfree/etc-chromium-default.txt
+exec $HOME/usr/chromium/chromium-browser/chrome $1 --disk-cache-dir="/tmp/browser.`whoami`.cache/chromium" --disk-cache-size=52428800 $@
