@@ -28,7 +28,7 @@ fi
 
 unset $ARG
 if [ $DEB_HOST_ARCH_BITS -gt $DEB_TARGET_ARCH_BITS ]; then
-    ARG += "linux32";
+    ARG="$ARG linux32";
 elif [ $DEB_HOST_ARCH_BITS -lt $DEB_TARGET_ARCH_BITS ]; then
     printf "E: Can not build $DEB_TARGET_ARCH package on this machine.\n" 1>&2
     exit 1
