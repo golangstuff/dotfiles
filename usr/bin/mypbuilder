@@ -4,8 +4,7 @@
 
 BASEDIR="$HOME/pbuilder"
 PBUILDER_TMP=/tmp/pbuilder
-DEBOOTSTRAP=debootstrap
-FOREIGN_DEBOOTSTRAP=qemu-debootstrap
+DEBOOTSTRAP=qemu-debootstrap
 
 DIST=$1
 DEB_TARGET_ARCH=$2
@@ -26,15 +25,6 @@ else
     DEB_HOST_ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
     DEB_HOST_ARCH_BITS=`dpkg-architecture -qDEB_HOST_ARCH_BITS`
     DEB_TARGET_ARCH_BITS=`dpkg-architecture -a$DEB_TARGET_ARCH -qDEB_HOST_ARCH_BITS`
-fi
-
-if [ "$DEB_TARGET_ARCH" != "$DEB_HOST_ARCH" ]; then
-    if ! `PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin which $FOREIGN_DEBOOTSTRAP > /dev/null`; then
-        printf "E: $FOREIGN_DEBOOTSTRAP required when host and target architectures do not match.\n"
-        exit 1
-    else
-        DEBOOTSTRAP=$FOREIGN_DEBOOTSTRAP
-    fi
 fi
 
 unset $ARG
