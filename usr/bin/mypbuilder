@@ -4,7 +4,6 @@
 
 BASEDIR="$HOME/pbuilder"
 PBUILDER_TMP=/tmp/pbuilder
-DEBOOTSTRAP=qemu-debootstrap
 
 DIST=$1
 DEB_TARGET_ARCH=$2
@@ -15,6 +14,12 @@ for i in dpkg-architecture pbuilder pigz; do
     if ! `PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin which $i > /dev/null`; then
         printf "E: Required command \"$i\" not found.\n" 1>&2
         exit 1
+    fi
+done
+
+for i in debootstrap qemu-debootstrap; do
+    if `PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin which $i > /dev/null`; then
+	DEBOOTSTRAP=$i
     fi
 done
 
@@ -47,6 +52,11 @@ if ! [ -d $BASEDIR/etc ]; then
 elif ! [ -s $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc ]; then
     printf "E: $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc does not exist or empty.\n" 1>&2
     exit 1
+fi
+
+if ! [ -d $BASEDIR/base ]; then
+    printf "W: $BASEDIR/base does not exist, creating.\n" 1>&2
+    mkdir -p $BASEDIR/base
 fi
 
 for i in logs result; do
