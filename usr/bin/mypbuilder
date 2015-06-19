@@ -49,8 +49,8 @@ fi
 if ! [ -d $BASEDIR/etc ]; then
     printf "E: $BASEDIR/etc does not exist, BASEDIR not valid.\n" 1>&2
     exit 1
-elif ! [ -s $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc ]; then
-    printf "E: $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc does not exist or empty.\n" 1>&2
+elif ! [ -s $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH ]; then
+    printf "E: $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH pbuilderrc file does not exist or empty.\n" 1>&2
     exit 1
 fi
 
@@ -135,7 +135,7 @@ COMMON_ARGS="--override-config \
     --debootstrap $DEBOOTSTRAP \
     --architecture $DEB_TARGET_ARCH \
     --distribution $DISTRO \
-    --configfile $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH-pbuilderrc \
+    --configfile $BASEDIR/etc/$DIST-$DEB_TARGET_ARCH \
     --basetgz $BASEDIR/base/$DIST-$DEB_TARGET_ARCH-base.tgz"
 
 if [ "$PROCEED" = "true" ]; then
