@@ -13,6 +13,7 @@ dir = "~/usr/wallpapers/"
 dir_parent = os.path.expanduser(dir)
 dir_cur = dir_parent + 'current/'
 dir_his = dir_parent + 'previous/'
+dir_lock = dir_parent + 'lockscreen/'
 
 flag = 0
 r = urllib.request.urlopen(url)
@@ -32,6 +33,8 @@ file_name = dir_cur + url.split('/')[-1].split('#')[0].split('?')[0]
 if not os.path.exists(file_name):
     if not os.path.exists(dir_his):
         os.makedirs(dir_his)
+    if not os.path.exists(dir_lock):
+        os.makedirs(dir_lock)
     if not os.path.exists(dir_cur):
         os.makedirs(dir_cur)
     else:
@@ -41,3 +44,5 @@ if not os.path.exists(file_name):
         os.makedirs(dir_cur)
     with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
         shutil.copyfileobj(response, out_file)
+    # Symlink from /usr/share/wallpapers/Elarun/contents/images/2560x1600.png
+    os.system('convert ' + file_name + ' ' + dir_lock + 'wallpaper.png')
