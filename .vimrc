@@ -1,65 +1,93 @@
-"Author: Roy L Zuo (roylzuo at gmail dot com)
-"Description: vim runtime configure file 
-"source $VIMRUNTIME/vimrc_example.vim
-" vim: ft=vim
+" Description: vim runtime configure file
+" vim: ft=vim foldmethod=marker
 
-set nocompatible	" not vi compatible
+set nocompatible	    " not vi compatible
+let mapleader="\<Space>"    " this is used a lot in plugin settings
+
+if filereadable( $HOME . '/.vimrc.plug'  )
+    source  $HOME/.vimrc.plug
+endif
+
+filetype plugin indent on
+syntax on
+
 set mouse=""            " disable mouse
-filetype plugin indent on 
-
 set history=50		" keep 50 lines of command line history
 " keep record of editing information for cursor restore and more
-set viminfo='10,\"100,:20,%,n~/.viminfo 
+set viminfo='10,\"100,:20,%,n~/.viminfo
 
 " do incremental searching
 set incsearch hlsearch wrapscan
-" Clear search highlight with Ctrl+N
-map <silent> <C-N> :let @/=""<CR>
 set ignorecase smartcase
 
 set showmatch		" show the matching brackets when typing
+" set ambiwidth=double     " set this if terminal has similar setting
 
 set showcmd		" display incomplete commands
 set ruler		" show the cursor position all the time in statusline
 set laststatus=2        " always display a nicer status bar
 set statusline=%<%h%m%r\ %f%=[%{&filetype},%{&fileencoding},%{&fileformat}]%k\ %-14.(%l/%L,%c%V%)\ %P
-set wildmenu		" show possible command when pressing <TAB>
+" set wildmenu		" show possible command when pressing <TAB>
+set wildmode=longest:list,full
 "set cmdheight=2
 set notitle             " do not set xterm dynamic title
 "set number
 
-set matchtime=5		
-
+set matchtime=5
 set lazyredraw          " faster for macros
+set ttyfast             " better for xterm
 
-set guifont=Monaco\ 10
-set guifontwide=WenQuanYi\ Micro\ Hei\ 12
+" make spell suggest faster
+set spellsuggest=best
+set spelllang=en_gb,cjk
+
 set guioptions-=T
 set guioptions-=r
+let s:uname = system("uname")
+if s:uname == "Darwin\n"
+    "Mac options here
+    set guifont=Monaco\ for\ Powerline:h14
+    set lines=50
+    set columns=90
+else
+    set guifont=Monaco\ 10
+    set guifontwide=WenQuanYi\ Micro\ Hei\ 12
+endif
 
-set smartindent autoindent
-set expandtab
+set smartindent autoindent expandtab smarttab
 set shiftwidth=4
 set softtabstop=4 	" replace <tab> with 4 blank space.
 set textwidth=80	" wrap text for 78 letters
-set smarttab
 
 map Q gq
 set wrap
 set whichwrap=b,s,<,>,[,],h,l
 set linebreak           " no breakline in the middle of a word
 
-set formatprg=fmt
-"set formatoptions+=mM     " default tcq, mM to help wrap chinese
+if executable( 'par' )
+    set formatprg=par\ req
+else
+    set formatprg=fmt
+endif
+set formatoptions+=mM     " default tcq, mM to help wrap chinese
+
 set backup
-set backupdir=$HOME/.vim/backup
+if !isdirectory($HOME . "/.backup")
+    call mkdir($HOME . "/.backup", "p")
+endif
+set backupdir=$HOME/.backup
+set directory=$HOME/.backup     "swp
+
+if version >= 703
+    if !isdirectory($HOME . "/.vim/undo")
+        call mkdir($HOME . "/.vim/undo", "p")
+    endif
+    set undodir=~/.vim/undo undofile undolevels=1000 undoreload=1000
+endif
 
 set commentstring=#%s       " default comment style
-"setlocal spell spelllang=en_us
-"set spell
 set sps=best,10             " only show 10 best spell suggestions
 set dictionary+=/usr/share/dict/words
-"set spf+=$HOME/.vim/spellfile/default
 
 set magic
 
@@ -70,89 +98,48 @@ set listchars=nbsp:¬,eol:¶,tab:>-,extends:»,precedes:«,trail:•
 " 光标移动到buffer的顶部和底部时保持3行距离
 set scrolloff=3
 
-"dynamic cursor color for xterm \033=>\e  007=>\a (BEL)
-if &term =~ "xterm"
-    :silent !echo -ne "\e]12;IndianRed2\007"
-    let &t_SI = "\e]12;RoyalBlue1\007"
-    let &t_EI = "\e]12;IndianRed2\007"
-    autocmd VimLeave * :!echo -ne "\e]12;green\007"
-"elseif &term =~ "screen"    " screen in urxvt or xterm
-    ":silent !echo -ne "\eP\e]12;IndianRed2\007\e\\"
-    "let &t_SI = "\eP\e]12;RoyalBlue1\007\e\\"
-    "let &t_EI = "\eP\e]12;IndianRed2\007\e\\"
-    "autocmd VimLeave * :!echo -ne "\eP\e]12;green\007\e\\"
-endif
+set foldenable foldnestmax=1 foldlevelstart=1
+set foldmethod=marker   " fdm=syntax is very slow and makes trouble for neocomplete
 
-let fortran_have_tabs=1	    " this line must be placed before syntax on
-let fortran_fold=1
+set background=dark
+set cc=90
 
-set foldenable
-set foldmethod=syntax
-set foldnestmax=1
-
-"set background=dark
-set background=light
-
-syntax on 
-"maybe necessary for urxvt, because vim use ^H for backspace, 
+"maybe necessary for urxvt, because vim use ^H for backspace,
 "but urxvt can use both ^H and ^?
 "fixdel
 set backspace=2
 
-"if has 256 colour, use a 256 colour theme
-if $TERM =~ '^\(xterm\|screen\)' || $TERM =~ '256color$' || has("gui_running")
-    if !has("gui_running")
-        set t_Co=256
-    endif
-    "colorscheme inkpot
-    "colorscheme leo
-    "molokai is excellent for dark background
-    "colorscheme molokai
-    colorscheme pyte
-else
-    colorscheme tango
-endif
+"tags, use semicolon to seperate so that vim searches parent directories!
+set tags=./.tags;
 
 " 高亮当前行
-"set cursorline
+set cursorline
 "set cursorcolumn
-autocmd InsertLeave * set nocursorline
-autocmd InsertEnter * set cursorline 
+" autocmd InsertLeave * set nocursorline
+" autocmd InsertEnter * set cursorline
+
+" remove all trailing white spaces
+"autocmd BufWritePre * :%s/\s\+$//e
 
 "---------------------encoding detection--------------------------------
-"set encoding&		    " terminal charset: follows current locale
-"set termencoding=
-"set fileencodings-=latin1
-"set fileencoding&          " auto-sensed charset of current buffer
-"function GetEncoding(f)     "automatic update encoding
-"let e = system('enca -L none -Pm "' . a:f . '"')
-"let e = substitute(e, '/.*', '', '')
-"if e =~ 'unknown'
-"return 'utf-8'
-"endif
-"return e
-"endfunc
-
-"autocmd BufReadPre * 
-"\exec "set fileencodings+=" . GetEncoding(expand('<afile>')) 
-
 set encoding=utf-8
 set fileencoding&
 set fileencodings=ucs-bom,utf-8,enc-cn,cp936,gbk,latin1
+
 "---------------------completion settings-------------------------------
 "make completion menu usable even when some characters are typed.
 set completeopt=longest,menuone
-"inoremap <expr> <cr> pumvisible() ? "\<c-y>" : "\<c-g>u\<cr>"
-"inoremap <expr> <c-n> pumvisible() ? 
-            "\"\<c-n>" : "\<c-n>\<c-r>=pumvisible() ? \"\\<down>\" : \"\\<cr>\""
-"inoremap <expr> <m-;> pumvisible() ? 
-            "\"\<c-n>" : "\<c-x>\<c-o>\<c-n>\<c-p>\<c-r>=pumvisible() ? 
-            "\\"\\<down>\" : \"\\<cr>\""
+set complete-=i
+set complete-=t
+
 "---------------------keyboard mappings---------------------------------
 set winaltkeys=no
 
 "ascii art escape sequence for /etc/motd, ssh banner and etc
 imap ,e   <C-V><C-[>[
+
+"insert time stamp
+imap <F8> <C-R>=strftime("%Y-%m-%d %H:%M")<CR>
 
 "move among windows
 nmap <C-h>   <C-W>h
@@ -169,116 +156,77 @@ inoremap <m-k> <C-o>gk
 " search for visual-mode selected text
 vmap / y/<C-R>"<CR>
 
-" taglist.vim
-let g:Tlist_GainFocus_On_ToggleOpen=1
-let g:Tlist_Exit_OnlyWindow=1
-"let g:Tlist_Use_Right_Window=1
-let g:Tlist_Show_One_File=1
-let g:Tlist_Enable_Fold_Column=0
-let g:Tlist_Auto_Update=1
-nmap <F2>   :TlistToggle<CR>
-
-" NERDtree
-nmap <F3>   :NERDTreeToggle<CR>
-
-"insert time stamp in insert mode
-inoremap <F5> <C-R>=strftime("%Y-%m-%d %T %Z")<CR>
-
-"Make and make test
-nmap <F5>   :w<CR>:make<CR>
-nmap <F6>   :make test<CR>
-
-" NERO_comment.vim
-let g:NERDShutUp=1
-nmap <F9>   ,c<SPACE>
-vmap <F9>   ,c<SPACE>
-
 " tab navigation
-nmap tp :tabprevious<cr> 
-nmap tn :tabnext<cr>    
+nmap tp :tabprevious<cr>
+nmap tn :tabnext<cr>
 nmap to :tabnew<cr>
 nmap tc :tabclose<cr>
-"nmap gf <C-W>gf
+nmap gf <C-W>gf
 
-"Auomatically add file head. NERO_commenter.vim needed.
-function! AutoHead()        
-    let fl = line(".") 
-    if getline(fl) !~ "^$"
-        let fl += 1
-    endif 
-    let ll = fl+2
-    call setline(fl,"Author: Aron Xu (happyaron dot xu at gmail dot com)")
-    "call append(fl,"Last Change: ")
-    call append(fl,"Description: ")
-    call append(fl+1,"")
-    execute fl . ','. ll .'call NERDComment(0,"toggle")'
-endfunc
-nmap ,h :call AutoHead()<cr>
+" clear search highlight with F5
+nmap <F5>   :noh<cr><ESC>
 
-let g:timestamp_regexp = '\v\C%(<Last %([cC]hanged?|[Mm]odified):\s+)@<=.*$'
+" use <leader>y/p to interact with clipboard
+vmap <Leader>y "+y
+vmap <Leader>d "+d
+nmap <Leader>p "+p
+nmap <Leader>P "+P
+vmap <Leader>p "+p
+vmap <Leader>P "+P
 
 "--------------------------file type settings---------------------------
-"tags
-"use semicolon to seperate so that vim searches parent directories!
-set tags=tags;
-
 "Python
-"autocmd Filetype python setlocal omnifunc=pythoncomplete#Complete
-autocmd BufNewFile *.py 
-            \0put=\"#!/usr/bin/env python\<nl># -*- coding: UTF-8 -*-\<nl>\" 
-            \|call AutoHead()
 autocmd FileType python set omnifunc=pythoncomplete#Complete
 
 "ruby
-autocmd BufNewFile *.rb 0put=\"#!/usr/bin/env ruby\<nl># coding: utf-8\<nl>\" |call AutoHead()
-"autocmd FileType ruby set omnifunc=rubycomplete#Complete
+
+"no folding for comment block and if/do blocks
+let ruby_no_comment_fold=1
+let ruby_fold=1
+let ruby_operators=1
+autocmd FileType ruby set omnifunc=rubycomplete#Complete
+autocmd FileType ruby set shiftwidth=2 softtabstop=2
+autocmd FileType ruby let g:rubycomplete_buffer_loading = 1
+autocmd FileType ruby let g:rubycomplete_classes_in_global = 1
+autocmd BufRead,BufNewfile Vagrantfile set ft=ruby
+
+" scss
+autocmd FileType scss,sass setl shiftwidth=2 softtabstop=2
 
 "C/C++
-autocmd FileType cpp setlocal nofoldenable
-            \|nmap ,a :A<CR>      
-autocmd FileType c setlocal cindent
-
-"Fortran
-"autocmd FileType fortran let b:fortran_free_source = 1
+autocmd FileType cpp setl nofoldenable
+            \|nmap ,a :A<CR>
+autocmd FileType c setl cindent
 
 "Txt, set syntax file and spell check
-"autocmd BufRead,BufNewFile *.txt set filetype=txt 
-"autocmd BufRead *.txt setlocal spell spelllang=en_gb
+"autocmd BufRead,BufNewFile *.txt set filetype=txt
 
-"Tex ''spelllang=en_gb 
 "let g:tex_flavor="context"
 autocmd FileType tex,plaintex,context
             \|silent set spell
-            \|nmap <buffer> <F8> gwap	
+            \|nmap <buffer> <F8> gwap
 
-" shell script
-autocmd BufNewFile *.sh 0put=\"#!/bin/bash\<nl># vim:fdm=marker\<nl>\" |call AutoHead()
-
-"Gnuplot
-autocmd BufNewFile *.gpi 0put='#!/usr/bin/gnuplot -persist' |call AutoHead()
-
-"emails, 
+"emails,
 "delete old quotations, set spell and put cursor in the first line
-autocmd FileType mail 
+autocmd FileType mail
+            \|:silent setlocal fo+=aw       " http://wcm1.web.rice.edu/mutt-tips.html
             \|:silent set spell
-            \|:silent set tw=72
-           "\|:silent 0put=''
             "\|:silent 0put=''
             \|:silent g/^.*>\sOn.*wrote:\s*$\|^>\s*>.*$/de
-            \|:silent %s/^\s*>\s*--\_.\{-\}\_^\s*\_$//ge
             \|:silent 1
-
-"openGL shading language (glsl)
-au BufNewFile,BufRead *.frag,*.vert,*.fp,*.vp,*.glsl setf glsl
 
 "cuda
 au BufNewFile,BufRead *.cu set ft=cuda |setlocal cindent
 
 "markdown
-autocmd BufNewFile,BufRead *.mkd,*.mdown set ft=markdown comments=n:> nu nospell textwidth=0
+autocmd BufNewFile,BufRead *mkd,*.md,*.mdown set ft=markdown
+autocmd FileType markdown set comments=n:> nu nospell textwidth=0 formatoptions=tcroqn2
 
-"RestructuredText 
-autocmd BufNewFile,BufRead *.rst  set ft=rest ai formatoptions=tcroqn2
+"yaml
+autocmd FileType yaml set softtabstop=2 shiftwidth=2 noautoindent nosmartindent
+
+"coffee
+autocmd FileType coffee set softtabstop=2 shiftwidth=2
 
 "viki
 autocmd BufNewFile,BufRead *.viki set ft=viki
@@ -286,13 +234,18 @@ autocmd BufNewFile,BufRead *.viki set ft=viki
 "fcron
 autocmd BufNewFile,BufRead /tmp/fcr-* set ft=crontab
 
-"bbcode
-autocmd BufNewFile,BufRead /tmp/*forum.ubuntu.org.cn* set ft=bbcode
+"pentadactyl/vimperator
+autocmd BufNewFile,BufRead /tmp/pentadactyl*.tmp set textwidth=9999
+autocmd BufNewFile,BufRead *.vimperatorrc set ft=vimperator
 
 "remind
 autocmd BufNewFile,BufRead *.rem set ft=remind
+
+"crontab hack for mac
+autocmd BufEnter /private/tmp/crontab.* setl backupcopy=yes
+
 "-------------------special settings------------------------------------
-"big files?
+" {{{ big files?
 let g:LargeFile = 0.3	"in megabyte
 augroup LargeFile
     au!
@@ -317,22 +270,50 @@ augroup LargeFile
             \|echomsg "***note*** handling a large file"
         \|endif
 augroup END
+" }}}
 
-"Restore cursor to file position in previous editing session
-autocmd BufReadPost * 
-    \if line("'\"") > 0 && line("'\"") <= line("$") 
-        \|exe "normal g`\"" 
-    \|endif
+" {{{ restore views
+set viewoptions=cursor,folds,slash,unix
+augroup vimrc
+    autocmd BufWritePost *
+    \   if expand('%') != '' && &buftype !~ 'nofile'
+    \|      mkview!
+    \|  endif
+    autocmd BufRead *
+    \   if expand('%') != '' && &buftype !~ 'nofile'
+    \|      silent! loadview
+    \|  endif
+augroup END
+" }}}
 
-"warn long lines
-"au BufWinEnter * let w:m2=matchadd('ErrorMsg', '\%>' . &textwidth . 'v.\+', -1)
+" {{{ dynamic cursor color for xterm \033=>\e  007=>\a (BEL)
+if &term =~ "xterm"
+    :silent !echo -ne "\e]12;IndianRed2\007"
+    let &t_SI = "\e]12;RoyalBlue1\007"
+    let &t_EI = "\e]12;IndianRed2\007"
+    autocmd VimLeave * :!echo -ne "\e]12;green\007"
+"elseif &term =~ "screen"    " screen in urxvt or xterm
+    ":silent !echo -ne "\eP\e]12;IndianRed2\007\e\\"
+    "let &t_SI = "\eP\e]12;RoyalBlue1\007\e\\"
+    "let &t_EI = "\eP\e]12;IndianRed2\007\e\\"
+    "autocmd VimLeave * :!echo -ne "\eP\e]12;green\007\e\\"
+endif
+" }}}
 
-" For po.vim
-let g:po_translator = "Aron Xu <happyaron.xu@gmail.com>"
-let g:po_lang_team = "Chinese (simplified) <i18n-zh@googlegroups.com>" 
+" visual p does not replace paste buffer {{{ "
+function! RestoreRegister()
+  let @" = s:restore_reg
+  return ''
+endfunction
+function! s:Repl()
+  let s:restore_reg = @"
+  return "p@=RestoreRegister()\<cr>"
+endfunction
+vmap <silent> <expr> p <sid>Repl()
+" }}} visual p does not replace paste buffer "
 
-"Usages comments:
-" :set spell - Enable spell checking.
-" z=         - Show spell suggestions.
-" zo         - Expand collapsed quotes.
-" Ctrl+N     - Clear search highlight.
+" Highlight keywords like TODO BUG HACK INFO and etc {{{ "
+autocmd Syntax * call matchadd('Todo',  '\W\zs\(TODO\|FIXME\|CHANGED\|XXX\|BUG\|HACK\)')
+autocmd Syntax * call matchadd('Debug', '\W\zs\(NOTE\|INFO\|IDEA\)')
+" }}} Highlight keywords like TODO BUG HACK INFO and etc "
+
