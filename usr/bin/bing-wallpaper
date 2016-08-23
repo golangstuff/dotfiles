@@ -8,6 +8,7 @@ import shutil
 
 url = "https://cn.bing.com"
 dir = "~/usr/wallpapers/"
+sig = 'g_img={url: "'
 
 
 dir_parent = os.path.expanduser(dir)
@@ -18,8 +19,8 @@ dir_lock = dir_parent + 'lockscreen/'
 flag = 0
 r = urllib.request.urlopen(url)
 html = r.read().decode(r.headers.get_content_charset())
-for x in range(html.find('g_img={'),(html.find('g_img={')+100)):
-    if html[x] == "'":
+for x in range(html.find(sig),(html.find(sig)+100)):
+    if html[x] == '"':
         if flag == 1:
             break
         else:
