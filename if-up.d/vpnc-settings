@@ -7,7 +7,7 @@ VPNC=/usr/sbin/vpnc
 if `pidof $VPNC > /dev/null`; then
 	if `ip link | grep tun | grep 1412 > /dev/null`; then
 		for ifacetun in `ip link | grep tun | grep 1412 | cut -d' ' -f2 | sed 's/://'`; do
-			ip link set mtu 1382 dev $ifacetun
+			ip link set mtu 1374 dev $ifacetun
 		done
 	fi
 fi
