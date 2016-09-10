@@ -4,10 +4,13 @@ DEBEMAIL=happyaron.xu@gmail.com
 DEBFULLNAME="Aron Xu"
 export QUILT_PATCHES QUILT_REFRESH_ARGS DEBEMAIL DEBFULLNAME
 
-alias mutt='LANGUAGE="en_US.UTF-8" mutt'
-
-alias ack=ack-grep
-
-PATH=$PATH:$HOME/usr/bin
-
+PATH=$PATH:$HOME/usr/bin:$HOME/.local/bin
 export PATH
+
+LANG=en_US.UTF-8
+LANGUAGE=en_US
+export LANG LANGUAGE
+
+alias git-import-orig='git-import-orig --pristine-tar'
+alias lintian='lintian -IE --show-overrides'
+alias ack=ack-grep
