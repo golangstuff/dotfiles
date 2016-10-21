@@ -29,6 +29,9 @@ for x in range(html.find(sig),(html.find(sig)+100)):
     elif flag == 1:
         url += html[x]
 
+# To work around resolution problems in image
+url = url.replace('1366x768', '1920x1080')
+
 file_name = dir_cur + url.split('/')[-1].split('#')[0].split('?')[0]
 
 if not os.path.exists(file_name):
