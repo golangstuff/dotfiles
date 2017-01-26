@@ -13,4 +13,5 @@ export LANG LANGUAGE
 
 alias git-import-orig='git-import-orig --pristine-tar'
 alias lintian='lintian -IE --show-overrides'
+alias gpg=gpg2
 alias ack=ack-grep
